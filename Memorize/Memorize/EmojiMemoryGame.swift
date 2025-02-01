@@ -25,7 +25,7 @@ class EmojiMemoryGame: ObservableObject {
             } else {
                 return ""
             }
-        }
+         }
     }
     
     

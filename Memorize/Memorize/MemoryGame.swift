@@ -34,7 +34,7 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
 //                if cards[index].isFaceUp {
 //                    faceUpCardIndices.append(index)
 //                }
-//            }
+//            }                   
 //            
 //            if faceUpCardIndices.count == 1 {
 //                return faceUpCardIndices.first
@@ -61,7 +61,7 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
 //            let faceUpCardIndices = cards.indices.filter { index in cards[index].isFaceUp}
             
             /// the array that comes back filtering the items that is face up, we get the ONLY one out of there
-            /// dont even need return, because its handled by the .only which has the retunr there 
+            /// dont even need return, because its handled by the .only which has the retunr there
               cards.indices.filter { index in cards[index].isFaceUp}.only
 
 //            return faceUpCardIndices.count == 1 ? faceUpCardIndices.first : nil
