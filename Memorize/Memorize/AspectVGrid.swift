@@ -91,9 +91,9 @@ struct AspectVGrid<Item: Identifiable, ItemView: View>: View {
             let gridItemSize = gridItemWidthThatFits(
                 count: items.count,
                 size: geometry.size,
-                atAspectRatio: aspectRatio
+                atAspectRatio: aspectRatio 
             )
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 0)], spacing: 0) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: 0)], spacing: 0) {
                 ForEach(items) { item in
                     content(item)
                         .aspectRatio(aspectRatio, contentMode: .fit)

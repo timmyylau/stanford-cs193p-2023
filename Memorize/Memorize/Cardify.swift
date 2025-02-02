@@ -7,12 +7,32 @@
 
 import SwiftUI
 
-struct Cardify: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+struct Cardify: ViewModifier {
+    let isFaceUp: Bool
+    
+    
+    private struct Constants {
+        static let cornerRadius: CGFloat = 12
+        static let lineWidth: CGFloat = 2
+    }
+    
+    func body(content: Content) -> some View {
+        ZStack {
+            let base = RoundedRectangle(cornerRadius: Constants.cornerRadius)
+            base.strokeBorder(lineWidth: Constants.lineWidth)
+                .background(base.fill(.white))
+                .overlay(content)
+                .opacity(isFaceUp ? 1 : 0)
+            base.fill()
+                .opacity(isFaceUp ? 0 : 1)
+        }
     }
 }
 
-#Preview {
-    Cardify()
+extension View {
+    func cardify(isFaceUp: Bool) -> some View {
+        modifier(Cardify(isFaceUp: isFaceUp))
+    }
 }
+
+
