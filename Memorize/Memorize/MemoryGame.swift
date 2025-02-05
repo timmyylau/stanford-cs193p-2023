@@ -15,6 +15,8 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
     //setter is private, get is fine
     private(set) var cards: Array<Card>
     
+    private(set) var score: Int = 0
+    
     init(numberOfPairsOfCards: Int, cardContentFactory: (Int) -> CardContent) {
         cards = []
         for pairIndex in 0..<max(2, numberOfPairsOfCards) {
@@ -91,6 +93,15 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
                     if cards[potentialMatchIndex].content == cards[chosenIndex].content {
                         cards[chosenIndex].isMatched = true
                         cards[potentialMatchIndex].isMatched = true
+                        score += 2
+                    } else {
+                        if cards[chosenIndex].hasBeenSeen {
+                            score -= 1
+                            
+                        }
+                        if cards[potentialMatchIndex].hasBeenSeen {
+                            score -= 1
+                        }
                     }
                     
                 } else {
@@ -137,9 +148,19 @@ struct MemoryGame<CardContent> where CardContent: Equatable {
         //        }
         
         var id: String
-        var isFaceUp = true
+//        var isFaceUp = false
+        // using Property Observers
+        var isFaceUp = false {
+            didSet {
+                if oldValue && !isFaceUp {
+                    hasBeenSeen = true
+                }
+            }
+            
+        }
         var isMatched = false
         let content: CardContent
+        var hasBeenSeen: Bool = false
         
         var debugDescription: String {
             return "Card ID: \(id),  \(isFaceUp ? "up" : "down"), isMatched: \(isMatched), content: \(content)"

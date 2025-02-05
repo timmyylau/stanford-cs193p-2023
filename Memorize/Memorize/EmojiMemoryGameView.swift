@@ -11,7 +11,7 @@
 import SwiftUI
 
 struct EmojiMemoryGameView: View {
-    
+    typealias Card = MemoryGame<String>.Card
     //pased into here becaused have to be marked as source of truth.
     // never say = here,
     // dont use @Stateobject - Every time EmojiMemoryGameView updates (e.g., a button press), it recreates the EmojiMemoryGame object, resetting the game.
@@ -27,17 +27,33 @@ struct EmojiMemoryGameView: View {
             ScrollView {
                 cards
                     .foregroundStyle(viewModel.color)
-                    .animation(.default, value: viewModel.cards)
             }
-             Spacer()
-            Button("Shuffle"){
-                viewModel.shuffle(
-                )
+            HStack {
+                score
+                Spacer()
+                shuffle
+             
+            }
+            .font(.largeTitle)
+        }
+        //        .background(.yellow) //order matters
+        .padding()
+        //       .background(.yellow) //order matters
+    }
+    
+    
+    private var score: some View {
+        Text("Score: \(viewModel.score)")
+            .animation(nil)//implicit animation, do not animate this view
+    }
+    
+    private var shuffle: some View {
+        
+        Button("Shuffle"){
+            withAnimation {
+                viewModel.shuffle()
             }
         }
-//        .background(.yellow) //order matters
-        .padding()
-//       .background(.yellow) //order matters
     }
     
     /// var cards, its a computer property, its just a regular function, NOT a ViewBuilder,
@@ -48,7 +64,7 @@ struct EmojiMemoryGameView: View {
     /// you could say
     /// let aspectRation = CGFloat = 2/3
     /// return GeometryReader ... cause then you are actually reuting a view, instead you can use @ViewBuidler
-    //    @ViewBuilder 
+    //    @ViewBuilder
     private var cards : some View {
         //        let aspectRatio: CGFloat = 2/3
         /// columns: [GridItem(), GridItem(), GridItem()]
@@ -75,10 +91,18 @@ struct EmojiMemoryGameView: View {
         AspectVGrid(viewModel.cards, aspectRatio: aspectRatio){ card in
             CardView(card)
                 .padding(4)
+//                .overlay(content: FlyingNumber(number: scoreChange(causedBy: card)))
                 .onTapGesture {
-                    viewModel.choose(card)
-                }
+                    //explicit animation, aniamted everything when i click a card
+                    withAnimation {
+                        viewModel.choose(card)
+                    }
+                 }
         }
+    }
+    
+    private func scoreChange(causedBy card: Card) -> Int {
+        return 0
     }
 }
 
