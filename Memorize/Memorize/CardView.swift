@@ -39,9 +39,6 @@ struct CardView: View {
         //            Group {
         //                base.fill(.white)
         //                base.strokeBorder(lineWidth: Constants.lineWidth)
-        //
-        //
-        //
         //                Pie(endAngle: .degrees(240))
         //                    .opacity(Constants.Pie.opacity)
         //                    .overlay(
@@ -60,23 +57,32 @@ struct CardView: View {
         //        }
         
         
-        Pie(endAngle: .degrees(240))
-            .opacity(Constants.Pie.opacity)
-            .overlay(
-                Text(card.content)
-                    .font(.system(size: Constants.FontSize.large ))
-                    .minimumScaleFactor(Constants.FontSize.scaleFactor)
-                    .aspectRatio(1, contentMode: .fit)
-                    .multilineTextAlignment(.center)
-                    .padding(Constants.Pie.inset)
-                    .rotationEffect(.degrees(card.isMatched ? 360 : 0))
-                    .animation(.spin(duration: 1), value: card.isMatched)//implicit aniamtion, independent
-            )
-            .padding(Constants.inset)
-            .cardify(isFaceUp: card.isFaceUp)
-//            .modifier(Cardify(isFaceUp: card.isFaceUp))
-            .opacity(card.isFaceUp || !card.isMatched ? 1 : 0)
-        
+        ///takes whateveer viewbuilder, slice in peices and does it repeatedly
+        ///Timeline view is a view that takes a viewbuilder and a timeline, and it will take that viewbuilder and slice it into pieces and do it repeatedly
+        /// CPU vs Battery vs performance tradeoff
+        TimelineView(.animation(minimumInterval: 1/10)) { timeline in
+            ///disappear from the UI when its matched, fades out
+            if card.isFaceUp || !card.isMatched {
+                Pie(endAngle: .degrees(card.bonusPercentRemaining * 360))
+                    .opacity(Constants.Pie.opacity)
+                    .overlay(cardContent.padding(Constants.Pie.inset))
+                    .padding(Constants.inset)
+                    .cardify(isFaceUp: card.isFaceUp)
+                    //	.modifier(Cardify(isFaceUp: card.isFaceUp))
+            } else {
+                Color.clear //leaves a clear rectangle
+            }
+         }
+    }
+    
+    var cardContent: some View {
+        Text(card.content)
+            .font(.system(size: Constants.FontSize.large ))
+            .minimumScaleFactor(Constants.FontSize.scaleFactor)
+            .aspectRatio(1, contentMode: .fit)
+            .multilineTextAlignment(.center)
+            .rotationEffect(.degrees(card.isMatched ? 360 : 0))
+            .animation(.spin(duration: 1), value: card.isMatched)//implicit aniamtion, independent
     }
 }
 
