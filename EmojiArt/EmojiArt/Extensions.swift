@@ -23,6 +23,9 @@ extension CGOffset {
     static func +(lhs: CGOffset, rhs: CGOffset) -> CGOffset {
         CGOffset(width: lhs.width + rhs.width, height: lhs.height + rhs.height)
     }
+    ///inout , mean this parameter, the lhs, gets copied back out when this function ends.
+    ///copied in at the start, then copied out at the end
+    ///basically extended the CGoffset/CGSize because of the += issues that doesnt work with .translation
     static func +=(lhs: inout CGOffset, rhs: CGOffset) {
         lhs = lhs + rhs
     }
@@ -56,7 +59,10 @@ struct AnimatedActionButton: View {
     
     init(_ title: String? = nil,
          systemImage: String? = nil,
-         role: ButtonRole? = nil,
+         role: ButtonRole? = nil, /// destructive button ? like delete
+         /// @escaping - this fucntion is going to hold onto that closure, and call it later, it ESCAPES from this init
+         /// why does swift want to know that clearly ?  because its going to inline closure that cant escape.
+         /// closures are reference types and put them in the heap and gives a pointer to them so they can be held on to
          action: @escaping () -> Void
     ) {
         self.title = title
