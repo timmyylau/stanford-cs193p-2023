@@ -7,28 +7,73 @@
 
 import SwiftUI
 
+
+/// for UserDefaults
+/// it doesnt wrtie to disk everytime you store in it
+/// it bufferes up the changes and wrties it out when i thinks it needs to, everyfew seconds
+/// not too big deal for users, but xcode developemnt when you kill your app too fast it might not catch it
+/// Answer: so just switch to another app
+extension UserDefaults {
+    func palettes(forKey key: String) -> [Palette] {
+        if let jsonData = data(forKey: key),
+           let decodedPalettes = try? JSONDecoder().decode([Palette].self, from: jsonData) {
+            return decodedPalettes
+        } else {
+            return []
+        }
+    }
+    func set(_ palettes: [Palette], forKey key: String) {
+        let data = try? JSONEncoder().encode(palettes)
+        set(data, forKey: key)
+    }
+}
+
 /// viewmodel called stored -> when the VM stores something, it stores all the Palletes
 /// we make it persists
 class PaletteStore: ObservableObject {
     let name: String
     ///not private, not going to protect the mdoel, the VM is offering up the Model to the View directly (delete, add, change)
     
-    @Published var palettes: [Palette] {
+    private var userDefaultsKey: String {"PaletteStore: + \(name)"}
+    
+//    var objectWillChange: ObservableObjectPublisher
+    
+    //    @Published var palettes: [Palette] {
+    var palettes: [Palette] {
         ///cant delete the last palette, careful can end in an inifinte loop if not checked
-        didSet {
-            if palettes.isEmpty, !oldValue.isEmpty {
-                palettes = oldValue
+        //        didSet {
+        //            if palettes.isEmpty, !oldValue.isEmpty {
+        //                palettes = oldValue
+        //            }
+        //        }
+        
+        ///now using a comptuer property, getting the value from UserDefaults now instead, direclty storing at source,
+        /// gets an error "Property wrapper cannot be applied to a computed property", but we need @Published otherwise view wont update
+        /// @Published what it does - if you have a class and implements ObserbableObject, theres a FREE var you get var objectWillChange: ObserableObjectPublisher cause we got it autoatically behind the scenes before.
+        /// that var has value - and that var is the var we use to tell the view something will changed, calls objectWillChange's send function
+        /// Answer:  we remove @Published and use the var objectWillChange variable
+        get {
+            UserDefaults.standard.palettes(forKey: userDefaultsKey)
+        }
+        set {
+            if !newValue.isEmpty  {
+                UserDefaults.standard.set(newValue, forKey: name)
+                objectWillChange.send()/// send this message that the object will change, keep an eye on this cause it might change, look at this thing to see change
+                
             }
         }
     }
     
     
+    
+    
     init(named name:String) {
         self.name = name
-        palettes = Palette.builtins
-        
         if palettes.isEmpty {
-            palettes = [Palette(name: "Warning", emojis: "⚠️")]
+            palettes = Palette.builtins
+            if palettes.isEmpty {
+                palettes = [Palette(name: "Warning", emojis: "⚠️")]
+            }
         }
     }
     

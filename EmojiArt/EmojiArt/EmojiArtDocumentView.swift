@@ -85,7 +85,18 @@ struct EmojiArtDocumentView: View {
     
     @ViewBuilder ///fixes the returing 2 views issue, now it return 1 view a Tuple view
     private func documentContents(in geometry: GeometryProxy) -> some View {
-        AsyncImage(url: document.background)
+        AsyncImage(url: document.background) { phase in
+            if let image = phase.image {
+                image
+            } else if let url = document.background {
+                if phase.error != nil {
+                    Text("\(url) failed to load")
+                } else {
+                    ProgressView()
+                }
+            }
+                 
+        }
             .position(Emoji.Position.zero.in(geometry))///centerd in the emojis arts postion
         ForEach(document.emojis) { emoji in
             Text(emoji.string)

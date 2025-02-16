@@ -11,22 +11,60 @@ import SwiftUI
 class EmojiArtDocument: ObservableObject {
     typealias Emoji = EmojiArt.Emoji
     
-    @Published private var emojiArt = EmojiArt()
     
-    
-    init(){
-//        emojiArt.addEmoji("😀", at: EmojiArt.Emoji.Position(x: 0, y: 0), size: 40)
-        //can use the init for type inference
-        emojiArt.addEmoji("😀", at: .init(x: -200, y: 150), size: 40)
-        emojiArt.addEmoji("🚀", at: .init(x: 50, y: 50), size: 40)
-        
+    @Published private var emojiArt = EmojiArt() {
+        didSet {
+            autosave()
+            
+        }
     }
+    
+    ///in our sandbox, save to our document directory, we made our own .emojiart type
+    ///concert to json and write to
+    private let autosaveURL: URL = URL.documentsDirectory.appendingPathComponent("Autosaved.emojiart")
+    
+    
+    private func save(to url: URL) {
+        do {
+            
+            let data = try? emojiArt.json()
+            try data?.write(to: url)
+        }
+        catch let error {
+            print("EmojiArt error while autosaving \(error.localizedDescription)")
+        }
+    }
+    
+    
+    /// retrieve on init
+    init () {
+ 
+    }
+    
+    
+//    init(){
+        ///load from
+        
+        //        emojiArt.addEmoji("😀", at: EmojiArt.Emoji.Position(x: 0, y: 0), size: 40)
+        //can use the init for type inference
+//        emojiArt.addEmoji("😀", at: .init(x: -200, y: 150), size: 40)
+//        emojiArt.addEmoji("🚀", at: .init(x: 50, y: 50), size: 40)
+//    }
+    
+    
+    private func autosave() {
+        save(to: autosaveURL)
+        print("i auto save to \(autosaveURL)")
+    }
+    
+    
+
     
     // MARK: - Access to the Model, computed properties
     var emojis: [Emoji] { emojiArt.emojis }
     
     var background: URL? {
-        emojiArt.background      
+        emojiArt.background
     }
     
     
