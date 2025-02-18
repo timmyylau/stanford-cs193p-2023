@@ -30,9 +30,45 @@ extension UserDefaults {
 
 /// viewmodel called stored -> when the VM stores something, it stores all the Palletes
 /// we make it persists
-class PaletteStore: ObservableObject {
+///
+/// we addede Identifiable because of the PaletteManager, but it didnt complain
+/// why? : classes are identifiable by the pointer to them
+/// but we dont want this because i can create two palettestores with the same name, they're both writing to the same userdefaults place, theyll be the same PaletteStore, sharing the data
+///
+
+/// I COULD - put this as a protocol in the class Palettte store,
+/// Just Showing: that you can add protocol conformance via extentions, dont have to do in calss
+//extension PaletteStore: Hashable {
+//    /// 2 palette stores are the same if thier names are the same
+//    static func == (lhs: PaletteStore, rhs: PaletteStore) -> Bool {
+//        lhs.name == rhs.name
+//    }
+//    
+//    
+//    /// take this haser and combine all your vars that you want to be part of the hash value.
+//    func hash(into hasher: inout Hasher) {
+//        hasher.combine(name)
+//    }
+//}
+
+extension PaletteStore: Hashable {
+    static func == (lhs: PaletteStore, rhs: PaletteStore) -> Bool {
+        lhs.name == rhs.name
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+    }
+}
+
+   
+class PaletteStore: ObservableObject, Identifiable{
     let name: String
+    
+    var id: String {name}
+    
     ///not private, not going to protect the mdoel, the VM is offering up the Model to the View directly (delete, add, change)
+    
     
     private var userDefaultsKey: String {"PaletteStore: + \(name)"}
     
@@ -66,32 +102,62 @@ class PaletteStore: ObservableObject {
     
     
     
-    
-    init(named name:String) {
+    init(named name: String) {
         self.name = name
         if palettes.isEmpty {
             palettes = Palette.builtins
-            if palettes.isEmpty {
-                palettes = [Palette(name: "Warning", emojis: "⚠️")]
-            }
+       
         }
     }
+    
+  
+    
+//    init(named name:String) {
+//        self.name = name
+//        if palettes.isEmpty {
+//            palettes = Palette.builtins
+//            if palettes.isEmpty {
+//                palettes = [Palette(name: "Warning", emojis: "⚠️")]
+//            }
+//        }
+//    }
     
     
     ///make sure it is never array out of bouncds
     @Published private var _cursorIndex = 0
+    
     var cursorIndex: Int {
         get {boundsCheckedPaletteIndex(_cursorIndex)}
         set {_cursorIndex = boundsCheckedPaletteIndex(newValue)}
     }
-    
+  
     private func boundsCheckedPaletteIndex(_ index: Int) -> Int {
-        var index = index % palettes.count ///make sure in the count stapce
+        guard !palettes.isEmpty else { return 0 } // Default to index 0 if empty
+
+        var index = index % palettes.count
         if index < 0 {
             index += palettes.count
         }
         return index
     }
+    
+//    private func boundsCheckedPaletteIndex(_ index: Int) -> Int {
+//        var index = index % palettes.count
+//        if index < 0 {
+//            index += palettes.count
+//        }
+//        return index
+//    }
+    
+//    private func boundsCheckedPaletteIndex(_ index: Int) -> Int {
+//        // make sure index is not 0
+//        if index == 0 { return 0 }
+//        var index = index % palettes.count ///make sure in the count space
+//        if index < 0 {
+//            index += palettes.count
+//        }
+//        return index
+//    }
     
     // MARK: - Adding Palettes
     
@@ -132,15 +198,4 @@ class PaletteStore: ObservableObject {
     }
 }
 
-extension PaletteStore: Hashable {
-    static func == (lhs: PaletteStore, rhs: PaletteStore) -> Bool {
-        lhs.name == rhs.name
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-    }
-    
-    
-    
-}
+

@@ -14,7 +14,7 @@ import Foundation
 /// so we cant have any of our vars that are going to be decoded be a LET, they have to be vars
 /// when it gets devodede it can be set backt o what it was when it was stored by the encoder
 /// Answer: change the let id to var id
-struct Palette: Identifiable, Codable{
+struct Palette: Identifiable, Codable, Hashable{
     //    let id = UUID()
     var id = UUID()
     var name: String
