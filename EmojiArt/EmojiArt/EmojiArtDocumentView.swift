@@ -12,7 +12,7 @@ struct EmojiArtDocumentView: View {
     @ObservedObject var document: EmojiArtDocument//viewmodel
     typealias Emoji = EmojiArt.Emoji
     
-    private let emojis = "👻🍎😃🤪☹️🤯🐶🐭🦁🐵🦆🐝🐢🐄🐖🌲🌴🌵🍄🌞🌎🔥🌈🌧️🌨️☁️⛄️⛳️🚗🚙🚓🚲🛺🏍️🚘✈️🛩️🚀🚁🏰🏠❤️💤⛵️"
+//    private let emojis = "👻🍎😃🤪☹️🤯🐶🐭🦁🐵🦆🐝🐢🐄🐖🌲🌴🌵🍄🌞🌎🔥🌈🌧️🌨️☁️⛄️⛳️🚗🚙🚓🚲🛺🏍️🚘✈️🛩️🚀🚁🏰🏠❤️💤⛵️"
     
     
     private let paletteEmojiSize: CGFloat = 40
@@ -35,20 +35,67 @@ struct EmojiArtDocumentView: View {
         GeometryReader { geometry in
             ZStack {
                 Color.white
+                if document.background.isFetching {
+                    ProgressView()
+                        .scaleEffect(2)
+                        .tint(.blue)
+                        .position(Emoji.Position.zero.in(geometry))
+                }
                 documentContents(in: geometry)
                     .scaleEffect(zoom * gestureZoom)///scales == zoom, scale by a number 1 is the normal, no gesturing i use 1
                     .offset(pan + gesturePan)///plus works because of the extension
             }
             //            .gesture(zoomGesture)
             .gesture(panGesture.simultaneously(with: zoomGesture))//switch over, when the other gesture is detected
+            .onTapGesture(count: 2) {
+                zoomToFit(document.bbox, in: geometry)
+            }
             .dropDestination(for: Sturldata.self) { sturldatas, location in
                 return drop(sturldatas, at: location, in: geometry)
-                
             }
+            .onChange(of: document.background.failureReason) { oldValue, reason in
+                showBackgroundFailureAlert = (reason != nil)
+            }
+            .onChange(of: document.background.uiImage) { oldValue, uiImage in
+                zoomToFit(uiImage?.size, in: geometry)
+            }
+            .alert(
+                "Set Background",
+                isPresented: $showBackgroundFailureAlert,
+                presenting: document.background.failureReason,
+                actions: { reason in
+                    Button("OK", role: .cancel) { }
+                },
+                message: { reason in
+                    Text(reason)
+                }
+            )
         }
     }
     
     
+    private func zoomToFit(_ size: CGSize?, in geometry: GeometryProxy) {
+        if let size {
+            zoomToFit(CGRect(center: .zero, size: size), in: geometry)
+        }
+    }
+    
+    private func zoomToFit(_ rect: CGRect, in geometry: GeometryProxy) {
+        withAnimation {
+            if rect.size.width > 0, rect.size.height > 0,
+               geometry.size.width > 0, geometry.size.height > 0 {
+                let hZoom = geometry.size.width / rect.size.width
+                let vZoom = geometry.size.height / rect.size.height
+                zoom = min(hZoom, vZoom)
+                pan = CGOffset(
+                    width: -rect.midX * zoom,
+                    height: -rect.midY * zoom
+                )
+            }
+        }
+    }
+    
+    @State private var showBackgroundFailureAlert = false
     
     @State private var zoom: CGFloat = 1
     @State private var pan: CGOffset = .zero /// when we use offsets in swiftui, we use CGSize , typeallias    //    @State private var pan: CGOffset = .init(width: 100, height: 100)/// infer the type using init, else CGOffset(...)
@@ -85,19 +132,26 @@ struct EmojiArtDocumentView: View {
     
     @ViewBuilder ///fixes the returing 2 views issue, now it return 1 view a Tuple view
     private func documentContents(in geometry: GeometryProxy) -> some View {
-        AsyncImage(url: document.background) { phase in
-            if let image = phase.image {
-                image
-            } else if let url = document.background {
-                if phase.error != nil {
-                    Text("\(url) failed to load")
-                } else {
-                    ProgressView()
-                }
-            }
-                 
+//        AsyncImage(url: document.background) { phase in
+//            if let image = phase.image {
+//                image
+//            } else if let url = document.background {
+//                if phase.error != nil {
+//                    Text("\(url) failed to load")
+//                } else {
+//                    ProgressView()
+//                }
+//            }
+//                 
+//        }
+//            .position(Emoji.Position.zero.in(geometry))///centerd in the emojis arts postion
+        
+        
+        if let uiImage = document.background.uiImage {
+            Image(uiImage: uiImage)
+                .position(Emoji.Position.zero.in(geometry))
         }
-            .position(Emoji.Position.zero.in(geometry))///centerd in the emojis arts postion
+        
         ForEach(document.emojis) { emoji in
             Text(emoji.string)
                 .font(emoji.font)

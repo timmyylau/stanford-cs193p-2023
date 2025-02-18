@@ -68,8 +68,7 @@ class PaletteStore: ObservableObject, Identifiable{
     var id: String {name}
     
     ///not private, not going to protect the mdoel, the VM is offering up the Model to the View directly (delete, add, change)
-    
-    
+
     private var userDefaultsKey: String {"PaletteStore: + \(name)"}
     
 //    var objectWillChange: ObservableObjectPublisher
@@ -93,7 +92,7 @@ class PaletteStore: ObservableObject, Identifiable{
         }
         set {
             if !newValue.isEmpty  {
-                UserDefaults.standard.set(newValue, forKey: name)
+                UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
                 objectWillChange.send()/// send this message that the object will change, keep an eye on this cause it might change, look at this thing to see change
                 
             }

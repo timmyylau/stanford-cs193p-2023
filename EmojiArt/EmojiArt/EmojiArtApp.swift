@@ -15,8 +15,8 @@ struct EmojiArtApp: App {
     @StateObject var paletteStore3 = PaletteStore(named: "Speical")
     var body: some Scene {
         WindowGroup {
-//            EmojiArtDocumentView(document: defaultDocument)
-            PaletteManager(stores: [paletteStore, paletteStore2, paletteStore3])
+            //            PaletteManager(stores: [paletteStore, paletteStore2, paletteStore3])
+            EmojiArtDocumentView(document: defaultDocument)
                 .environmentObject(paletteStore)///pass via EnviromentObject -> deep into view hierachies, inject into entire app
             /// we can only have one PaletteStore injected in, cause theres no way to say which one, the injection thing only works when you have ONE thing of a certain type
         }
